@@ -26,9 +26,9 @@ SECRET_KEY = 'django-insecure-4&3y#pb_)pey8z1402vpta_hyvyisc@@^p=bq*&+_8-m2mo=f%
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+#
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = BASE_DIR / 'media'
 
 CKEDITOR_UPLOAD_PATH = 'uploads/'  # Папка для загрузок (внутри media)
 CKEDITOR_IMAGE_BACKEND = 'pillow'
@@ -97,15 +97,22 @@ REST_FRAMEWORK = {
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+#
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'kuba_db',
+#         'USER': 'kuba',
+#         'PASSWORD': '1234',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'my_db',
-        'USER': 'my_yser',
-        'PASSWORD': '1234',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -144,10 +151,18 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
 
-STATIC_URL = 'static/'
+# Папка для команды collectstatic
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Django будет собирать туда все статические файлы
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+# Дополнительные папки со статикой, если есть
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',  # твоя папка со статикой
+]
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
