@@ -2,23 +2,19 @@ from rest_framework import serializers
 from .models import Post, Vacancy, Application, WeSelf, FreeConsultation, DesignPage, AllProject, Event, Register
 
 
-# ux ui
-class DesignPageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DesignPage
-        fields = '__all__'
+
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'img', 'title', 'description', 'ckeditor']
-# vakansiya
+
 class VacancySerializer(serializers.ModelSerializer):
     class Meta:
         model = Vacancy
         fields = '__all__'
 
-# zayavka
+
 class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
@@ -36,20 +32,24 @@ class FreeConsultationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-#  vseh project
+class DesignPageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DesignPage
+        fields = '__all__'
+
 class AllProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = AllProject
         fields = '__all__'
 
-# meropriyatiya
+
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = '__all__'
 
-# registratsiya
+
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Register

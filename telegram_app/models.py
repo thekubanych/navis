@@ -1,7 +1,8 @@
-from ckeditor_uploader.fields import RichTextUploadingField
 from django.db import models
 from ckeditor.fields import RichTextField
+from ckeditor_uploader.fields import RichTextUploadingField
 
+# Post
 class Post(models.Model):
     img = models.FileField(upload_to='files/')
     title = models.CharField(max_length=200)
@@ -15,129 +16,111 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
-# vakansiya
+
+# Vacancy
 class Vacancy(models.Model):
-    level_choises = [
+    LEVEL_CHOICES = [
         ('junior', 'Junior'),
         ('middle', 'Middle'),
         ('senior', 'Senior'),
     ]
     title = models.CharField(max_length=200)
     description = models.TextField()
-    level = models.CharField(max_length=10, choices=level_choises)
+    level = models.CharField(max_length=10, choices=LEVEL_CHOICES)
     salary_som = models.IntegerField(blank=True, null=True)
     salary_to = models.IntegerField(blank=True, null=True)
     is_remote = models.BooleanField(default=False)
-    requirements = RichTextField(blank=True, null=True, help_text="Требования к кандидату")
-    responsibilities = RichTextField(blank=True, null=True, help_text="Обязанности кандидата")
-    conditions = RichTextField(blank=True, null=True, help_text="Условия работы")
+    requirements = RichTextField(blank=True, null=True)
+    responsibilities = RichTextField(blank=True, null=True)
+    conditions = RichTextField(blank=True, null=True)
 
     class Meta:
-        verbose_name = 'vsksnsi'
-        verbose_name_plural = 'vakansi'
+        verbose_name = 'vacancy'
+        verbose_name_plural = 'vacancies'
 
     def __str__(self):
         return self.title
 
-# zayavka
+
+# Application
 class Application(models.Model):
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=30)
     email = models.EmailField()
     linkedin = models.URLField(blank=True, null=True)
     file = models.FileField(upload_to='resumes/', blank=True, null=True)
+    comment = RichTextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    comment = RichTextField(blank=True, null=True, help_text="kommentarii kondidata")
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
 
-
     class Meta:
-        verbose_name = 'zayavka na vakansi'
-        verbose_name_plural = 'zayavka na vakansi'
+        verbose_name = 'application'
+        verbose_name_plural = 'applications'
 
     def __str__(self):
         return f"{self.name} - {self.vacancy.title}"
 
 
-
-# o nas ,instrumenty ,kontakty
+# WeSelf
 class WeSelf(models.Model):
     img = models.FileField(upload_to='files/')
     title = models.CharField(max_length=200, default="О нас")
-    description = RichTextField(help_text="about company, selyah i komande")
+    description = RichTextField()
     contact_email = models.EmailField()
     contact_phone = models.CharField(max_length=30)
     address = models.CharField(max_length=255, blank=True, null=True)
-    tools = models.CharField(max_length=300, default="Python, Django, Java, HTML, CSS, JavaScript, PostgreSQL",help_text="Инструменты , kotorie vy ispolzuete"
-    )
+    tools = models.CharField(max_length=300, default="Python, Django, Java, HTML, CSS, JavaScript, PostgreSQL")
     github_link = models.URLField(blank=True, null=True)
     telegram_link = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'О нас'
-        verbose_name_plural = 'О нас'
+        verbose_name = 'WeSelf'
+        verbose_name_plural = 'WeSelf'
 
     def __str__(self):
         return self.title
 
-# free consultation
+
+# FreeConsultation
 class FreeConsultation(models.Model):
     name = models.CharField(max_length=40)
     phone = models.CharField(max_length=30)
     email = models.EmailField()
-    address = models.CharField(max_length=255,blank=True,null=True)
-    house_working = models.CharField(max_length=200,
-                                     default="Пн–Пт: 9:00–18:00, Сб–Вс: выходной",
-                                     help_text='rejim kompany raboty')
-
-
+    address = models.CharField(max_length=255, blank=True, null=True)
+    house_working = models.CharField(max_length=200, default="Пн–Пт: 9:00–18:00, Сб–Вс: выходной")
 
     class Meta:
-        verbose_name = 'rejim raboty'
-        verbose_name_plural = 'rejim raboty'
+        verbose_name = 'Free Consultation'
+        verbose_name_plural = 'Free Consultations'
 
     def __str__(self):
         return self.name
-# http://127.0.0.1:8000/api/free-consultation/ {
-#     "name": "Кубаныч",
-#     "phone": "+996500000000",
-#     "email": "test@mail.com",
-#     "address": "Бишкек, пр. Чуй 120",
-#     "house_working": "Пн–Пт: 10:00–17:00"
-# }
 
-# str
-#
-#
-# kagdogo napravleniya
+
+# DesignPage
 class DesignPage(models.Model):
-    title = models.CharField(max_length=255, verbose_name="zagolovok stranitsa")
-    description = RichTextUploadingField(verbose_name="osnovnoe opisanie")
-
-    # bloki kontenta
-    section1_title = models.CharField(max_length=255, blank=True, null=True, verbose_name="zagalovka blok 1")
-    section1_content = RichTextUploadingField(blank=True, null=True, verbose_name="kontent bloka 1")
-
-    section2_title = models.CharField(max_length=255, blank=True, null=True, verbose_name="zagalovka blok 2")
-    section2_content = RichTextUploadingField(blank=True, null=True, verbose_name="kontent bloka 2")
-
-    section3_title = models.CharField(max_length=255, blank=True, null=True, verbose_name="zagalovka blok  3")
-    section3_content = RichTextUploadingField(blank=True, null=True, verbose_name="kontent bloka 3")
-
-    section4_title = models.CharField(max_length=255, blank=True, null=True, verbose_name="zagalovka blok 4")
-    section4_content = RichTextUploadingField(blank=True, null=True, verbose_name="kontent bloka 4")
-
+    title = models.CharField(max_length=255)
+    description = RichTextUploadingField()
+    section1_title = models.CharField(max_length=255, blank=True, null=True)
+    section1_content = RichTextUploadingField(blank=True, null=True)
+    section2_title = models.CharField(max_length=255, blank=True, null=True)
+    section2_content = RichTextUploadingField(blank=True, null=True)
+    section3_title = models.CharField(max_length=255, blank=True, null=True)
+    section3_content = RichTextUploadingField(blank=True, null=True)
+    section4_title = models.CharField(max_length=255, blank=True, null=True)
+    section4_content = RichTextUploadingField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "stranitsa UX/UI dizayn"
-        verbose_name_plural = "stranitsa UX/UI dizayn"
+        verbose_name = 'Design Page'
+        verbose_name_plural = 'Design Pages'
 
     def __str__(self):
         return self.title
 
 
+# AllProject
 class AllProject(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -145,44 +128,42 @@ class AllProject(models.Model):
     category = models.CharField(max_length=100, blank=True)
     link = models.URLField(blank=True)
 
-
-
     class Meta:
-        verbose_name = 'все проекты'
-        verbose_name_plural = 'все проекты'
+        verbose_name = 'Project'
+        verbose_name_plural = 'Projects'
 
     def __str__(self):
         return self.title
 
 
-# meropriyatiya
-
+# Event
 class Event(models.Model):
-    title = models.CharField(max_length=255, verbose_name="Название")
-    description = RichTextUploadingField(verbose_name="Описание")
-    requirements = RichTextUploadingField(blank=True, verbose_name="Требования")
-    date = models.DateField(verbose_name="Дата")
-    time = models.TimeField(verbose_name="Время")
-    location = models.CharField(max_length=255, verbose_name="Место проведения")
-    image = models.ImageField(upload_to='events/', blank=True, null=True, verbose_name="Изображение")
+    title = models.CharField(max_length=255)
+    description = RichTextUploadingField()
+    requirements = RichTextUploadingField(blank=True, null=True)
+    date = models.DateField()
+    time = models.TimeField()
+    location = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='events/', blank=True, null=True)
 
     class Meta:
-        verbose_name = "Мероприятие"
-        verbose_name_plural = "Мероприятия"
+        verbose_name = 'Event'
+        verbose_name_plural = 'Events'
         ordering = ['-date']
 
     def __str__(self):
         return self.title
 
 
-# registratsiya
-
+# Register
 class Register(models.Model):
     username = models.CharField(max_length=50)
-    phone = models.CharField
-    email = models.EmailField
+    phone = models.CharField(max_length=30)
+    email = models.EmailField()
 
     class Meta:
-        verbose_name = 'registratsiya'
-        verbose_name_plural = 'registratsiya'
+        verbose_name = 'Register'
+        verbose_name_plural = 'Register'
 
+    def __str__(self):
+        return self.username
