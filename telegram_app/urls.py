@@ -5,7 +5,7 @@ from drf_yasg import openapi
 from rest_framework import permissions
 from . import views
 from .views import (VacancyViewSet, ApplicationViewSet, WeSelfViewSet,FreeConsultationViewSet,
-                    DesignPageViewSet, AllProjectViewSet,EventViewSet)
+                    DesignPageViewSet, AllProjectViewSet,EventViewSet, RegisterViewSet)
 
 
 router = DefaultRouter()
@@ -16,6 +16,9 @@ router.register(r'free-consultation', FreeConsultationViewSet, basename='free-co
 router.register(r'design', DesignPageViewSet)
 router.register(r'all-projects', AllProjectViewSet)
 router.register(r'events', EventViewSet)
+router.register(r'events', EventViewSet)
+router.register(r'register', RegisterViewSet)
+
 
 
 schema_view = get_schema_view(

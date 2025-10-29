@@ -25,7 +25,6 @@ class VacancyViewSet(viewsets.ModelViewSet):
     queryset = Vacancy.objects.all()
     serializer_class = VacancySerializer
 
-
 class ApplicationViewSet(viewsets.ModelViewSet):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
@@ -35,39 +34,42 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         data = request.data
 
-        # Проверка обязательных полей
+        # proverka obyaz polya
         required_fields = ['name', 'phone', 'email', 'vacancy']
-        for field in required_fields:
-            if not data.get(field):
-                return Response(
-                    {'status': 'fail', 'error': f'{field} is required'},
-                    status=400
-                )
+        missing_fields = [field for field in required_fields if not data.get(field)]
+        if missing_fields:
+            return Response(
+                {'status': 'fail', 'error': f'Missing fields: {", ".join(missing_fields)}'},
+                status=400
+            )
 
+        # Сериализация и сохранение заявки
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
 
         # Формируем сообщение для Telegram
+        vacancy_title = getattr(instance.vacancy, 'title', 'Не указано')
         message = (
             f"📩 Новая заявка на вакансию:\n"
-            f"Вакансия: {instance.vacancy.title}\n"
+            f"Вакансия: {vacancy_title}\n"
             f"Имя: {instance.name}\n"
             f"Телефон: {instance.phone}\n"
             f"Email: {instance.email}\n"
             f"LinkedIn: {instance.linkedin or 'нет'}"
         )
 
-        # Отправка в Telegram с обработкой ошибок
+        # Отправка в Telegram с логированием ошибок
         try:
             url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
             response = requests.post(url, data={'chat_id': GROUP_ID, 'text': message}, timeout=5)
             if response.status_code != 200:
-                print(f"Telegram error: {response.status_code} - {response.text}")
+                print(f"Telegram error {response.status_code}: {response.text}")
         except Exception as e:
             print(f"Telegram exception: {e}")
 
         return Response({'status': 'ok', 'application_id': instance.id}, status=201)
+
 
 
 #  polucheniya postov ---
