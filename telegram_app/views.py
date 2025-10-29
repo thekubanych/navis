@@ -26,16 +26,29 @@ class VacancyViewSet(viewsets.ModelViewSet):
     serializer_class = VacancySerializer
 
 
-
 class ApplicationViewSet(viewsets.ModelViewSet):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
     http_method_names = ['get', 'post']
     permission_classes = [permissions.AllowAny]
 
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
+        data = request.data
+
+        # Проверка обязательных полей
+        required_fields = ['name', 'phone', 'email', 'vacancy']
+        for field in required_fields:
+            if not data.get(field):
+                return Response(
+                    {'status': 'fail', 'error': f'{field} is required'},
+                    status=400
+                )
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
         instance = serializer.save()
-        print("New application saved:", instance.id)
+
+        # Формируем сообщение для Telegram
         message = (
             f"📩 Новая заявка на вакансию:\n"
             f"Вакансия: {instance.vacancy.title}\n"
@@ -44,9 +57,17 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             f"Email: {instance.email}\n"
             f"LinkedIn: {instance.linkedin or 'нет'}"
         )
-        url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-        response = requests.post(url, data={'chat_id': GROUP_ID, 'text': message})
-        print("Telegram response:", response.status_code, response.text)
+
+        # Отправка в Telegram с обработкой ошибок
+        try:
+            url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+            response = requests.post(url, data={'chat_id': GROUP_ID, 'text': message}, timeout=5)
+            if response.status_code != 200:
+                print(f"Telegram error: {response.status_code} - {response.text}")
+        except Exception as e:
+            print(f"Telegram exception: {e}")
+
+        return Response({'status': 'ok', 'application_id': instance.id}, status=201)
 
 
 #  polucheniya postov ---
