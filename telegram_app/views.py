@@ -35,6 +35,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         instance = serializer.save()
+        print("New application saved:", instance.id)
         message = (
             f"📩 Новая заявка на вакансию:\n"
             f"Вакансия: {instance.vacancy.title}\n"
@@ -45,7 +46,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         )
         url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
         response = requests.post(url, data={'chat_id': GROUP_ID, 'text': message})
-        print(response.text)
+        print("Telegram response:", response.status_code, response.text)
 
 
 #  polucheniya postov ---
