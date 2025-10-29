@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-4&3y#pb_)pey8z1402vpta_hyvyisc@@^p=bq*&+_8-m2mo=f%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["navis-qvqs.onrender.com"]
+
 #
 # MEDIA_URL = '/media/'
 # MEDIA_ROOT = BASE_DIR / 'media'
