@@ -16,7 +16,6 @@ router.register(r'free-consultation', FreeConsultationViewSet, basename='free-co
 router.register(r'design', DesignPageViewSet)
 router.register(r'all-projects', AllProjectViewSet)
 router.register(r'events', EventViewSet)
-router.register(r'events', EventViewSet)
 router.register(r'register', RegisterViewSet)
 
 
