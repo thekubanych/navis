@@ -2,8 +2,8 @@ from rest_framework import viewsets, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
-from .models import Vacancy, Application, Post, WeSelf, FreeConsultation, DesignPage, AllProject, Event
-from .serializers import VacancySerializer, ApplicationSerializer, PostSerializer,WeSelfSerializer,FreeConsultationSerializer, DesignPageSerializer,AllProjectSerializer, EventSerializer
+from .models import Vacancy, Application, Post, WeSelf, FreeConsultation, DesignPage, AllProject, Event,Register
+from .serializers import VacancySerializer, ApplicationSerializer, PostSerializer,WeSelfSerializer,FreeConsultationSerializer, DesignPageSerializer,AllProjectSerializer, EventSerializer, RegisterSerializer
 import requests
 import random
 
@@ -142,3 +142,22 @@ class AllProjectViewSet(viewsets.ModelViewSet):
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
+
+
+
+class RegisterViewSet(viewsets.ModelViewSet):
+    queryset = Register.objects.all()
+    serializer_class = RegisterSerializer
+    http_method_names = ['get', 'post']
+    permission_classes = [permissions.AllowAny]
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        message = (
+            f"📞 new consultation:\n"
+            f"name: {instance.name}\n"
+            f"phone: {instance.phone}\n"
+            f"Email: {instance.email}\n"
+        )
+        url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+        requests.post(url, data={'chat_id': GROUP_ID, 'text': message})

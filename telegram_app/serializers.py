@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Vacancy, Application, WeSelf, FreeConsultation, DesignPage, AllProject, Event
+from .models import Post, Vacancy, Application, WeSelf, FreeConsultation, DesignPage, AllProject, Event, Register
 
 
 # ux ui
@@ -47,4 +47,10 @@ class AllProjectSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
+        fields = '__all__'
+
+# registratsiya
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Register
         fields = '__all__'

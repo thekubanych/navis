@@ -174,3 +174,15 @@ class Event(models.Model):
     def __str__(self):
         return self.title
 
+
+# registratsiya
+
+class Register(models.Model):
+    username = models.CharField(max_length=50)
+    phone = models.CharField
+    email = models.EmailField
+
+    class Meta:
+        verbose_name = 'registratsiya'
+        verbose_name_plural = 'registratsiya'
+
