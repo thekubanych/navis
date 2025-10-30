@@ -160,7 +160,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'  # Django будет собирать т�
 
 # Дополнительные папки со статикой, если есть
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # твоя папка со статикой
+    BASE_DIR / 'static',
 ]
 
 # Media files
