@@ -1,29 +1,40 @@
-from rest_framework import viewsets, permissions
+import re
+import random
+import requests
+from rest_framework import viewsets, permissions, status, serializers
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
-from .models import Vacancy, Application, Post, WeSelf, FreeConsultation, DesignPage, AllProject, Event,Register
-from .serializers import VacancySerializer, ApplicationSerializer, PostSerializer,WeSelfSerializer,FreeConsultationSerializer, DesignPageSerializer,AllProjectSerializer, EventSerializer, RegisterSerializer
-import requests
-import random
+from .models import (
+    Vacancy, Application, Post, WeSelf, FreeConsultation,
+    DesignPage, AllProject, Event, Register
+)
+from .serializers import (
+    VacancySerializer, ApplicationSerializer, PostSerializer,
+    WeSelfSerializer, FreeConsultationSerializer, DesignPageSerializer,
+    AllProjectSerializer, EventSerializer, RegisterSerializer
+)
 
-# class AllProjectViewSet(viewsets.)
+# Telegram bot
+TOKEN = '8280608817:AAG2-VAQv7SzrhI5xQ7ev4MmM_njfDzCtto'
+GROUP_ID = '-1003082347664'
 
+# Регулярки для валидации
+PHONE_REGEX = re.compile(r'^\+996\d{9}$')
+EMAIL_REGEX = re.compile(r'^[\w\.-]+@[\w\.-]+\.\w+$')
+
+
+# -------------------- ViewSets -------------------- #
 
 class DesignPageViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DesignPage.objects.all().order_by('-created_at')
     serializer_class = DesignPageSerializer
 
 
-
-# Telegram bot
-TOKEN = '8280608817:AAG2-VAQv7SzrhI5xQ7ev4MmM_njfDzCtto'
-GROUP_ID = '-1003082347664'
-
-# --- ViewSets для API ---
 class VacancyViewSet(viewsets.ModelViewSet):
     queryset = Vacancy.objects.all()
     serializer_class = VacancySerializer
+
 
 class ApplicationViewSet(viewsets.ModelViewSet):
     queryset = Application.objects.all()
@@ -33,22 +44,27 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data
-
-        # proverka obyaz polya
         required_fields = ['name', 'phone', 'email', 'vacancy']
-        missing_fields = [field for field in required_fields if not data.get(field)]
+        missing_fields = [f for f in required_fields if not data.get(f)]
         if missing_fields:
             return Response(
                 {'status': 'fail', 'error': f'Missing fields: {", ".join(missing_fields)}'},
-                status=400
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Сериализация и сохранение заявки
+        phone = data.get('phone')
+        email = data.get('email')
+
+        if not PHONE_REGEX.match(phone):
+            return Response({'status': 'fail', 'error': 'Invalid phone number. Use +996XXXXXXXXX'}, status=400)
+        if not EMAIL_REGEX.match(email):
+            return Response({'status': 'fail', 'error': 'Invalid email format'}, status=400)
+
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
 
-        # Формируем сообщение для Telegram
+        # Отправка в Telegram
         vacancy_title = getattr(instance.vacancy, 'title', 'Не указано')
         message = (
             f"📩 Новая заявка на вакансию:\n"
@@ -58,21 +74,16 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             f"Email: {instance.email}\n"
             f"LinkedIn: {instance.linkedin or 'нет'}"
         )
-
-        # Отправка в Telegram с логированием ошибок
         try:
-            url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-            response = requests.post(url, data={'chat_id': GROUP_ID, 'text': message}, timeout=5)
-            if response.status_code != 200:
-                print(f"Telegram error {response.status_code}: {response.text}")
+            requests.post(f'https://api.telegram.org/bot{TOKEN}/sendMessage',
+                          data={'chat_id': GROUP_ID, 'text': message}, timeout=5)
         except Exception as e:
             print(f"Telegram exception: {e}")
 
         return Response({'status': 'ok', 'application_id': instance.id}, status=201)
 
 
-
-#  polucheniya postov ---
+# -------------------- Получение постов -------------------- #
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
 def get_posts(request):
@@ -80,42 +91,43 @@ def get_posts(request):
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
 
-# -otpravka zayavki na telegram
+
+# -------------------- Отправка заявки на Telegram -------------------- #
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 @csrf_exempt
 def send_message(request):
+    email = request.data.get('email')
+    phone = request.data.get('phone')
+
+    if not email or not phone:
+        return Response({'status': 'fail', 'error': 'Email and phone are required'}, status=400)
+    if not PHONE_REGEX.match(phone):
+        return Response({'status': 'fail', 'error': 'Invalid phone number. Use +996XXXXXXXXX'}, status=400)
+    if not EMAIL_REGEX.match(email):
+        return Response({'status': 'fail', 'error': 'Invalid email format'}, status=400)
+
+    code = random.randint(100000, 999999)
+    message = f"📩 Новая заявка:\nEmail: {email}\nТелефон: {phone}\nКод верификации: {code}"
+
     try:
-        email = request.data.get('email')
-        phone = request.data.get('phone')
-
-        if not email or not phone:
-            return Response({'status': 'fail', 'error': 'email and phone number obezyatelno'}, status=400)
-
-        code = random.randint(100000, 999999)
-        message = f"📩 Новая заявка:\nEmail: {email}\nPhonenumber: {phone}\ncode verification: {code}"
-
-        url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-        payload = {'chat_id': GROUP_ID, 'text': message}
-        response = requests.post(url, data=payload)
-
-        if response.status_code == 200:
-            return Response({'status': 'ok', 'code': code})
-        else:
-            return Response({'status': 'fail', 'error': response.text}, status=500)
-
+        requests.post(f'https://api.telegram.org/bot{TOKEN}/sendMessage',
+                      data={'chat_id': GROUP_ID, 'text': message}, timeout=5)
     except Exception as e:
-        return Response({'status': 'error', 'details': str(e)}, status=500)
+        print(f"Telegram exception: {e}")
+
+    return Response({'status': 'ok', 'code': code})
 
 
-
+# -------------------- О нас -------------------- #
 class WeSelfViewSet(viewsets.ModelViewSet):
-    """API для управления страницей 'О нас'"""
     queryset = WeSelf.objects.all()
     serializer_class = WeSelfSerializer
 
 
+# -------------------- FreeConsultation -------------------- #
 
+NAME_REGEX = re.compile(r'^[A-Za-zА-Яа-яЁё]+$')
 class FreeConsultationViewSet(viewsets.ModelViewSet):
     queryset = FreeConsultation.objects.all()
     serializer_class = FreeConsultationSerializer
@@ -124,29 +136,47 @@ class FreeConsultationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         instance = serializer.save()
+
+        # Валидация
+        if not PHONE_REGEX.match(instance.phone):
+            raise serializers.ValidationError({'phone': 'Invalid phone number. Use +996XXXXXXXXX'})
+
+        if instance.email and not EMAIL_REGEX.match(instance.email):
+            raise serializers.ValidationError({'email': 'Invalid email format'})
+        if not NAME_REGEX.match(instance.name):
+            raise serializers.ValidationError({'name': 'Name must contain only letters'})
+
+
+
+        # Telegram
         message = (
-            f"📞 new consultation:\n"
-            f"name: {instance.name}\n"
-            f"phone: {instance.phone}\n"
-            f"Email: {instance.email}\n"
-            f"address: {instance.address}\n"
-            f"rejim rabotu: {instance.house_working}"
+            f"📞 Новая консультация:\n"
+            f"Имя: {instance.name}\n"
+            f"Телефон: {instance.phone}\n"
+            f"Email: {instance.email or 'нет'}\n"
+            f"Адрес: {instance.address}\n"
+            f"Время работы: {instance.house_working}"
         )
-        url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-        requests.post(url, data={'chat_id': GROUP_ID, 'text': message})
+        try:
+            requests.post(f'https://api.telegram.org/bot{TOKEN}/sendMessage',
+                          data={'chat_id': GROUP_ID, 'text': message}, timeout=5)
+        except Exception as e:
+            print(f"Telegram exception: {e}")
 
 
+# -------------------- AllProject -------------------- #
 class AllProjectViewSet(viewsets.ModelViewSet):
     queryset = AllProject.objects.all()
     serializer_class = AllProjectSerializer
 
 
+# -------------------- Event -------------------- #
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 
 
-
+# -------------------- Register -------------------- #
 class RegisterViewSet(viewsets.ModelViewSet):
     queryset = Register.objects.all()
     serializer_class = RegisterSerializer
@@ -155,11 +185,22 @@ class RegisterViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         instance = serializer.save()
+
+        # Валидация
+        if not PHONE_REGEX.match(instance.phone):
+            raise serializers.ValidationError({'phone': 'Invalid phone number. Use +996XXXXXXXXX'})
+        if instance.email and not EMAIL_REGEX.match(instance.email):
+            raise serializers.ValidationError({'email': 'Invalid email format'})
+
+        # Telegram
         message = (
-            f"📞 new consultation:\n"
-            f"name: {instance.name}\n"
-            f"phone: {instance.phone}\n"
-            f"Email: {instance.email}\n"
+            f"📞 Новая регистрация:\n"
+            f"Имя: {instance.name}\n"
+            f"Телефон: {instance.phone}\n"
+            f"Email: {instance.email or 'нет'}"
         )
-        url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-        requests.post(url, data={'chat_id': GROUP_ID, 'text': message})
+        try:
+            requests.post(f'https://api.telegram.org/bot{TOKEN}/sendMessage',
+                          data={'chat_id': GROUP_ID, 'text': message}, timeout=5)
+        except Exception as e:
+            print(f"Telegram exception: {e}")
