@@ -35,7 +35,6 @@ class VacancyViewSet(viewsets.ModelViewSet):
     queryset = Vacancy.objects.all()
     serializer_class = VacancySerializer
 
-
 class ApplicationViewSet(viewsets.ModelViewSet):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
@@ -64,7 +63,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
 
-        # Отправка в Telegram
+        # Формируем текстовое сообщение
         vacancy_title = getattr(instance.vacancy, 'title', 'Не указано')
         message = (
             f"📩 Новая заявка на вакансию:\n"
@@ -74,15 +73,31 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             f"Email: {instance.email}\n"
             f"LinkedIn: {instance.linkedin or 'нет'}"
         )
+
+        # Отправка текста
         try:
-            requests.post(f'https://api.telegram.org/bot{TOKEN}/sendMessage',
-                          data={'chat_id': GROUP_ID, 'text': message}, timeout=5)
+            requests.post(
+                f'https://api.telegram.org/bot{TOKEN}/sendMessage',
+                data={'chat_id': GROUP_ID, 'text': message},
+                timeout=5
+            )
         except Exception as e:
             print(f"Telegram exception: {e}")
 
+        # Отправка файла, если он есть
+        if instance.file:
+            try:
+                with open(instance.file.path, 'rb') as f:
+                    requests.post(
+                        f'https://api.telegram.org/bot{TOKEN}/sendDocument',
+                        data={'chat_id': GROUP_ID},
+                        files={'document': f},
+                        timeout=10
+                    )
+            except Exception as e:
+                print(f"Telegram file exception: {e}")
+
         return Response({'status': 'ok', 'application_id': instance.id}, status=201)
-
-
 # -------------------- Получение постов -------------------- #
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])

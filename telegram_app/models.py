@@ -1,3 +1,6 @@
+import os
+
+from django.core.exceptions import ValidationError
 from django.db import models
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
@@ -18,6 +21,7 @@ class Post(models.Model):
 
 
 # Vacancy
+
 class Vacancy(models.Model):
     LEVEL_CHOICES = [
         ('junior', 'Junior'),
@@ -30,9 +34,6 @@ class Vacancy(models.Model):
     salary_som = models.IntegerField(blank=True, null=True)
     salary_to = models.IntegerField(blank=True, null=True)
     is_remote = models.BooleanField(default=False)
-    requirements = RichTextField(blank=True, null=True)
-    responsibilities = RichTextField(blank=True, null=True)
-    conditions = RichTextField(blank=True, null=True)
 
     class Meta:
         verbose_name = 'vacancy'
@@ -40,7 +41,11 @@ class Vacancy(models.Model):
 
     def __str__(self):
         return self.title
-
+def validate_resume(value):
+    ext = os.path.splitext(value.name)[1]
+    valid_extensions = ['.pdf', '.docx']
+    if ext.lower() not in valid_extensions:
+        raise ValidationError("Можно загружать только PDF или DOCX файлы")
 
 # Application
 class Application(models.Model):
@@ -48,7 +53,8 @@ class Application(models.Model):
     phone = models.CharField(max_length=30)
     email = models.EmailField()
     linkedin = models.URLField(blank=True, null=True)
-    file = models.FileField(upload_to='resumes/', blank=True, null=True)
+    file= models.FileField(upload_to="resumes/", verbose_name="Резюме", blank=True, null=True,
+                              validators=[validate_resume])
     comment = RichTextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
