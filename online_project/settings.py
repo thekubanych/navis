@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-4&3y#pb_)pey8z1402vpta_hyvyisc@@^p=bq*&+_8-m2mo=f%'
 
-DEBUG = True  # ← выключи debug на Render
+DEBUG = False  # ← выключи debug на Render
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'navis-qvqs.onrender.com']
 
 # CKEditor
