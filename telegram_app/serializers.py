@@ -1,6 +1,12 @@
 from rest_framework import serializers
-from .models import Post, Vacancy, Application, WeSelf, FreeConsultation, DesignPage, AllProject, Event, Register
+from .models import Post, Vacancy, Application, WeSelf, FreeConsultation, DesignPage, AllProject, Event, Register, Contact
 
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = '__all__'
 
 # ux ui
 class DesignPageSerializer(serializers.ModelSerializer):

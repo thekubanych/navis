@@ -1,4 +1,4 @@
-from .models import Post, Vacancy, Application, WeSelf,  FreeConsultation
+from .models import Post, Vacancy, Application, WeSelf, FreeConsultation, Contact
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
 from django import forms
 from django.contrib import admin
@@ -28,3 +28,4 @@ admin.site.register(Post, PostAdmin)
 admin.site.register(Vacancy)
 admin.site.register(Application)
 admin.site.register(WeSelf)
+admin.site.register(Contact)

@@ -67,7 +67,7 @@ class Application(models.Model):
         return f"{self.name} - {self.vacancy.title}"
 
 
-# WeSelf
+# о нас
 class WeSelf(models.Model):
     img = models.FileField(upload_to='files/')
     title = models.CharField(max_length=200, default="О нас")
@@ -167,6 +167,7 @@ class Register(models.Model):
     phone = models.CharField(max_length=30)
     email = models.EmailField()
 
+
     class Meta:
         verbose_name = 'Register'
         verbose_name_plural = 'Register'
@@ -174,3 +175,11 @@ class Register(models.Model):
     def __str__(self):
         return self.username
 
+class Contact(models.Model):
+    address = models.CharField(max_length=255)
+    phone = models.CharField(max_length=50)
+    email = models.EmailField()
+    map_link = models.URLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.address

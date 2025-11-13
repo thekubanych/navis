@@ -1,20 +1,12 @@
 import re
 import random
 import requests
-from rest_framework import viewsets, permissions, status, serializers
+from rest_framework import viewsets, permissions, status, serializers, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
-from .models import (
-    Vacancy, Application, Post, WeSelf, FreeConsultation,
-    DesignPage, AllProject, Event, Register
-)
-from .serializers import (
-    VacancySerializer, ApplicationSerializer, PostSerializer,
-    WeSelfSerializer, FreeConsultationSerializer, DesignPageSerializer,
-    AllProjectSerializer, EventSerializer, RegisterSerializer
-)
-
+from .models import *
+from .serializers import *
 # Telegram bot
 TOKEN = '8280608817:AAG2-VAQv7SzrhI5xQ7ev4MmM_njfDzCtto'
 GROUP_ID = '-1003082347664'
@@ -24,6 +16,8 @@ PHONE_REGEX = re.compile(r'^\+996\d{9}$')
 EMAIL_REGEX = re.compile(r'^[\w\.-]+@[\w\.-]+\.\w+$')
 
 
+
+
 # -------------------- ViewSets -------------------- #
 
 class DesignPageViewSet(viewsets.ReadOnlyModelViewSet):
@@ -31,7 +25,7 @@ class DesignPageViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DesignPageSerializer
 
 
-class VacancyViewSet(viewsets.ModelViewSet):
+class VacancyViewSet(viewsets.ReadOnlyModelViewSet):  # Только GET
     queryset = Vacancy.objects.all()
     serializer_class = VacancySerializer
 
@@ -135,10 +129,10 @@ def send_message(request):
 
 
 # -------------------- О нас -------------------- #
-class WeSelfViewSet(viewsets.ModelViewSet):
+class WeSelfViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = WeSelf.objects.all()
     serializer_class = WeSelfSerializer
-
+    permission_classes = [permissions.AllowAny]
 
 # -------------------- FreeConsultation -------------------- #
 
@@ -180,13 +174,13 @@ class FreeConsultationViewSet(viewsets.ModelViewSet):
 
 
 # -------------------- AllProject -------------------- #
-class AllProjectViewSet(viewsets.ModelViewSet):
+class AllProjectViewSet(viewsets.ReadOnlyModelViewSet):  # Только GET
     queryset = AllProject.objects.all()
     serializer_class = AllProjectSerializer
 
 
 # -------------------- Event -------------------- #
-class EventViewSet(viewsets.ModelViewSet):
+class EventViewSet(viewsets.ReadOnlyModelViewSet):  # Только GET
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 
@@ -219,3 +213,17 @@ class RegisterViewSet(viewsets.ModelViewSet):
                           data={'chat_id': GROUP_ID, 'text': message}, timeout=5)
         except Exception as e:
             print(f"Telegram exception: {e}")
+
+
+
+
+
+@api_view(['GET'])
+def get_contacts(request):
+    contact = Contact.objects.first()
+    return Response(ContactSerializer(contact).data if contact else {})
+
+
+class ContactViewSet(viewsets.ReadOnlyModelViewSet):  # Только GET
+    queryset = Contact.objects.all()
+    serializer_class = ContactSerializer

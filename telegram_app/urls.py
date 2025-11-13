@@ -4,8 +4,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
 from . import views
-from .views import (VacancyViewSet, ApplicationViewSet, WeSelfViewSet,FreeConsultationViewSet,
-                    DesignPageViewSet, AllProjectViewSet,EventViewSet, RegisterViewSet)
+from .views import *
 
 
 router = DefaultRouter()
@@ -17,6 +16,7 @@ router.register(r'design', DesignPageViewSet)
 router.register(r'all-projects', AllProjectViewSet)
 router.register(r'events', EventViewSet)
 router.register(r'register', RegisterViewSet)
+router.register('contact',ContactViewSet)
 
 
 
@@ -39,3 +39,4 @@ urlpatterns = [
     path('', include(router.urls)),
 
 ]
+
