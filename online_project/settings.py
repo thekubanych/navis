@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     "drf_spectacular",
     'ckeditor',
@@ -25,6 +26,52 @@ INSTALLED_APPS = [
     'telegram_app',
     'drf_yasg',
 ]
+
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Должен быть как можно выше
+    'django.middleware.security.SecurityMiddleware',
+    # ...
+]
+
+# Настройки CORS
+CORS_ALLOW_ALL_ORIGINS = True  # Для разработки - разрешает все домены
+
+# Или для продакшена укажите конкретные домены:
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React dev server
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",  # Vite dev server
+    "http://127.0.0.1:5173",
+    "https://yourdomain.com",  # ваш продакшен домен
+]
+
+# Разрешить куки и авторизацию
+CORS_ALLOW_CREDENTIALS = True
+
+# Разрешенные методы
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS'
+]
+
+# Разрешенные заголовки
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+
 
 # Мидлвары
 MIDDLEWARE = [
